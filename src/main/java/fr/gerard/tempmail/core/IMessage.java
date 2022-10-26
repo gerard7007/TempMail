@@ -2,7 +2,7 @@ package fr.gerard.tempmail.core;
 
 import java.io.IOException;
 
-public interface Message {
+public interface IMessage {
 
     /**
      * @return The message's ID
