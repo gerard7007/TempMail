@@ -1,7 +1,7 @@
 package fr.gerard.tempmail.impl;
 
 import fr.gerard.tempmail.TempMailHelper;
-import fr.gerard.tempmail.core.IMessage;
+import fr.gerard.tempmail.core.Message;
 import fr.gerard.tempmail.core.TempMail;
 import fr.gerard.tempmail.util.Utils;
 import okhttp3.*;
@@ -92,7 +92,7 @@ public class EmailTemp extends TempMail {
     }
 
     @Override
-    public List<IMessage> fetchMessages() throws IOException {
+    public List<Message> fetchMessages() throws IOException {
         JSONArray array = getMessages();
 
         System.out.println(array.toString(4));

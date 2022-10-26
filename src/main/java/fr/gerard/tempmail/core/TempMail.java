@@ -20,20 +20,20 @@ public abstract class TempMail {
     /**
      * @return Fetch incoming messages
      */
-    public abstract List<IMessage> fetchMessages() throws IOException;
+    public abstract List<Message> fetchMessages() throws IOException;
 
     /**
      * @return The awaited message
      */
-    public CompletableFuture<IMessage> awaitMessage(Predicate<IMessage> condition) {
+    public CompletableFuture<Message> awaitMessage(Predicate<Message> condition) {
         int delay = 1000;
 
         return CompletableFuture.supplyAsync(() -> {
             try {
                 while (!Thread.currentThread().isInterrupted()) {
-                    List<IMessage> messages = fetchMessages();
+                    List<Message> messages = fetchMessages();
 
-                    for (IMessage message : messages) {
+                    for (Message message : messages) {
                         if (condition.test(message)) {
                             return message;
                         }

@@ -1,7 +1,7 @@
 package fr.gerard.tempmail.impl;
 
 import fr.gerard.tempmail.TempMailHelper;
-import fr.gerard.tempmail.core.IMessage;
+import fr.gerard.tempmail.core.Message;
 import fr.gerard.tempmail.core.TempMail;
 import fr.gerard.tempmail.util.Utils;
 import okhttp3.*;
@@ -110,17 +110,17 @@ public class EmailNator extends TempMail {
     }
 
     @Override
-    public List<IMessage> fetchMessages() throws IOException {
+    public List<Message> fetchMessages() throws IOException {
         try (Response response = messageList(null); ResponseBody body = response.body()) {
             cookie = Utils.formatCookie(response.headers("set-cookie"));
             JSONObject data = new JSONObject(body.string());
             JSONArray messageData = data.getJSONArray("messageData");
-            List<IMessage> messages = new ArrayList<>(messageData.length());
+            List<Message> messages = new ArrayList<>(messageData.length());
 
             for (int i = 0; i < messageData.length(); i++) {
                 JSONObject jsonMessage = messageData.getJSONObject(i);
 
-                messages.add(new IMessage() {
+                messages.add(new Message() {
                     @Override
                     public String id() {
                         return jsonMessage.getString("messageID");
