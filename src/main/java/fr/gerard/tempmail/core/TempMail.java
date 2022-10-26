@@ -1,9 +1,8 @@
 package fr.gerard.tempmail.core;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 public abstract class TempMail {
@@ -21,22 +20,33 @@ public abstract class TempMail {
     /**
      * @return Fetch incoming messages
      */
-    public abstract List<Message> fetchMessages() throws IOException;
+    public abstract List<IMessage> fetchMessages() throws IOException;
 
-    public Message waitForMessage(Predicate<Message> condition, Duration timeout) throws IOException, TimeoutException {
-        long millis = timeout.toMillis();
+    /**
+     * @return The awaited message
+     */
+    public CompletableFuture<IMessage> awaitMessage(Predicate<IMessage> condition) {
         int delay = 1000;
 
-        for (int i = 0; i < millis / delay; i++) {
-            List<Message> messages = fetchMessages();
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    List<IMessage> messages = fetchMessages();
 
-            for (Message message : messages) {
-                if (condition.test(message)) {
-                    return message;
+                    for (IMessage message : messages) {
+                        if (condition.test(message)) {
+                            return message;
+                        }
+                    }
+
+                    Thread.sleep(delay);
                 }
+
+                throw new InterruptedException("Await message loop interrupted");
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
             }
-        }
-        throw new TimeoutException(String.format("Waiting for message (%s)", millis));
+        });
     }
 
 }

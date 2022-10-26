@@ -1,10 +1,11 @@
 package fr.gerard.tempmail.impl;
 
-import fr.gerard.tempmail.TempMail4J;
-import fr.gerard.tempmail.core.Message;
+import fr.gerard.tempmail.TempMailHelper;
+import fr.gerard.tempmail.core.IMessage;
 import fr.gerard.tempmail.core.TempMail;
 import fr.gerard.tempmail.util.Utils;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,19 +20,18 @@ import java.util.logging.Logger;
 
 public class EmailNator extends TempMail {
 
-    private Logger LOGGER = Logger.getLogger(getClass().getName());
+    private static final Logger LOGGER = Logger.getLogger(EmailNator.class.getName());
 
     private OkHttpClient httpClient;
     private String cookie;
     private String email;
 
-    public EmailNator(@Nullable OkHttpClient httpClient) throws IOException {
-        this.httpClient = httpClient != null ? httpClient : TempMail4J.getDefaultHttpClient();
+    public EmailNator(@NotNull OkHttpClient httpClient) throws IOException {
+        this.httpClient = httpClient;
 
         Request request = new Request.Builder().url("https://www.emailnator.com/")
-                .headers(TempMail4J.getDefaultHeaders())
+                .headers(TempMailHelper.getDefaultHeaders())
                 .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-                .header("Host", "www.emailnator.com")
                 .header("Referer", "https://duckduckgo.com/")
                 .header("Sec-Fetch-Dest", "document")
                 .header("Sec-Fetch-Mode", "navigate")
@@ -46,7 +46,7 @@ public class EmailNator extends TempMail {
     }
 
     public EmailNator() throws IOException {
-        this(null);
+        this(TempMailHelper.getDefaultHttpClient());
     }
 
     private String xsrfToken() {
@@ -67,7 +67,7 @@ public class EmailNator extends TempMail {
         }
 
         Request request = new Request.Builder().url("https://www.emailnator.com/message-list")
-                .headers(TempMail4J.getDefaultHeaders())
+                .headers(TempMailHelper.getDefaultHeaders())
                 .header("Accept", "application/json, text/plain, */*")
                 .header("Content-Type", "application/json")
                 .header("Cookie", cookie)
@@ -86,7 +86,7 @@ public class EmailNator extends TempMail {
         byte[] payload = "{\"email\":[\"domain\",\"plusGmail\",\"dotGmail\"]}".getBytes(StandardCharsets.UTF_8);
 
         Request request = new Request.Builder().url("https://www.emailnator.com/generate-email")
-                .headers(TempMail4J.getDefaultHeaders())
+                .headers(TempMailHelper.getDefaultHeaders())
                 .header("Accept", "application/json, text/plain, */*")
                 .header("Content-Type", "application/json")
                 .header("Cookie", cookie)
@@ -110,17 +110,17 @@ public class EmailNator extends TempMail {
     }
 
     @Override
-    public List<Message> fetchMessages() throws IOException {
+    public List<IMessage> fetchMessages() throws IOException {
         try (Response response = messageList(null); ResponseBody body = response.body()) {
             cookie = Utils.formatCookie(response.headers("set-cookie"));
             JSONObject data = new JSONObject(body.string());
             JSONArray messageData = data.getJSONArray("messageData");
-            List<Message> messages = new ArrayList<>(messageData.length());
+            List<IMessage> messages = new ArrayList<>(messageData.length());
 
             for (int i = 0; i < messageData.length(); i++) {
                 JSONObject jsonMessage = messageData.getJSONObject(i);
 
-                messages.add(new Message() {
+                messages.add(new IMessage() {
                     @Override
                     public String id() {
                         return jsonMessage.getString("messageID");

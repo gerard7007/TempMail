@@ -7,7 +7,7 @@ import okhttp3.OkHttpClient;
 
 import java.util.Collections;
 
-public class TempMail4J {
+public class TempMailHelper {
 
     private static OkHttpClient httpClient;
     private static Headers headers;
