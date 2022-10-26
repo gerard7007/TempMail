@@ -1,8 +1,7 @@
 package fr.gerard.tempmail.tests;
 
-import fr.gerard.tempmail.core.IMessage;
-import fr.gerard.tempmail.core.TempMail;
-import fr.gerard.tempmail.impl.EmailNator;
+import fr.gerard.tempmail.core.Message;
+import fr.gerard.tempmail.impl.OneSecMail;
 
 import java.util.concurrent.TimeUnit;
 
@@ -22,13 +21,14 @@ public class MainTest {
         // System.out.println(verifLink);
 
 
-        TempMail tempMail = new EmailNator(); // Specify email api here
+        OneSecMail tempMail = new OneSecMail(); // Specify email api here
+        tempMail.setDomain("dcctb.com");
         String email = tempMail.generateNewAddress();
 
         System.out.println("Email address: " + email);
         System.out.println("Waiting for email...");
 
-        IMessage message = tempMail.awaitMessage(msg -> msg.from().contains("@")).get(300, TimeUnit.SECONDS);
+        Message message = tempMail.awaitMessage(msg -> msg.from().contains("@")).get(300, TimeUnit.SECONDS);
 
         System.out.println("Received");
         System.out.println(message.content());
